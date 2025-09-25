@@ -38,11 +38,11 @@ module.exports = (app) => {
         const NMEA2000PathMapper = require('../src/nmea2000-paths');
         pathMapper = new NMEA2000PathMapper(app.debug);
 
-        // Start weather data collection using NOAA plugin pattern
+        // Start weather data collection from AccuWeather
         // Initialize weather service first
         weatherService.start();
 
-        // Fetch initial data after 5 seconds like NOAA plugin
+        // Fetch initial data after 5 seconds
         setTimeout(() => {
           weatherService.updateWeatherData().catch((error) => {
             app.debug('Initial weather fetch failed:', error);

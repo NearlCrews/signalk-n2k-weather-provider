@@ -14,9 +14,9 @@ class WeatherService {
     const SignalKClient = require('./signalk-client');
     this.signalkClient = new SignalKClient(app, debug);
 
-    // Initialize weather aggregator for API calls
-    const WeatherAggregator = require('./weather-aggregator');
-    this.weatherAggregator = new WeatherAggregator(settings, debug);
+    // Initialize AccuWeather service for API calls
+    const AccuWeatherService = require('./accuweather-service');
+    this.accuWeatherService = new AccuWeatherService(settings, debug);
 
     // Initialize wind calculator for proper vector calculations
     const WindCalculator = require('./wind-calculator');
@@ -29,7 +29,7 @@ class WeatherService {
     // Start periodic weather updates based on configured frequency
     const updateInterval = (this.settings.updateFrequency || 5) * 60 * 1000; // Convert minutes to milliseconds
 
-    // Set up periodic updates (like NOAA plugin pattern)
+    // Set up periodic updates for AccuWeather data
     this.updateTimer = setInterval(() => {
       this.updateWeatherData();
     }, updateInterval);
@@ -67,7 +67,7 @@ class WeatherService {
       }
 
       // Get weather data from AccuWeather
-      const weatherData = await this.weatherAggregator.getAggregatedWeatherData(position);
+      const weatherData = await this.accuWeatherService.fetchCurrentWeather(position);
 
       if (weatherData) {
         // Get vessel data for wind calculations

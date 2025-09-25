@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-09-25
+
+### Changed
+- **Major Code Refactoring**: Comprehensive architectural improvements for better maintainability
+- **Modular Design**: Split monolithic WeatherAggregator into focused modules
+  - `AccuWeatherClient`: Standalone API client for weather data retrieval
+  - `AccuWeatherService`: Clean service interface replacing WeatherAggregator
+  - `WeatherUtils`: Centralized utility functions for unit conversions
+- **Function-Based Architecture**: Converted WeatherUtils from static class to modern function exports
+- **Clean Imports**: Updated all modules to use proper destructuring imports
+- **Eliminated Code Duplication**: Centralized all unit conversion logic in WeatherUtils
+- **Improved Naming**: Removed misleading class names and legacy references
+
+### Removed
+- **Legacy Code Cleanup**: Removed all outdated NOAA plugin references and patterns
+- **Unused Files**: Deleted obsolete `weather-aggregator.js` file
+- **Static Class Pattern**: Replaced with modern JavaScript function modules
+
+### Fixed
+- **Biome Linting**: Resolved all linting warnings and errors
+  - Fixed unsafe `isFinite` usage with `Number.isFinite`
+  - Eliminated static-only class pattern
+  - Achieved zero linting warnings across all files
+- **Import Dependencies**: Updated all import statements to match new modular architecture
+
+### Technical Improvements
+- **Separation of Concerns**: Clear boundaries between API client, service layer, and utilities
+- **Modern JavaScript**: Adopted current best practices and coding standards
+- **Maintainable Code**: Improved code organization for easier future development
+- **Clean Architecture**: Focused modules with single responsibilities
+- **Developer Experience**: Better code readability and debugging capabilities
+
 ## [1.0.0] - 2025-09-24
 
 ### Added

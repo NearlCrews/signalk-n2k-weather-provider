@@ -4,6 +4,15 @@
  * Following standard meteorological formulas and marine navigation practices
  */
 
+const {
+  kelvinToCelsius,
+  celsiusToKelvin,
+  kelvinToFahrenheit,
+  fahrenheitToKelvin,
+  msToKMH,
+  clamp,
+} = require('./weather-utils');
+
 class WindCalculator {
   constructor(debug) {
     this.debug = debug || (() => {});
@@ -90,8 +99,8 @@ class WindCalculator {
     }
 
     // Convert to Celsius and km/h for calculation
-    const tempC = this.kelvinToCelsius(temperatureK);
-    const windKmh = windSpeedMs * 3.6;
+    const tempC = kelvinToCelsius(temperatureK);
+    const windKmh = msToKMH(windSpeedMs);
 
     // Wind chill is only meaningful for temperatures below 10°C and wind speeds above 4.8 km/h
     if (tempC >= 10 || windKmh < 4.8) {
@@ -102,7 +111,7 @@ class WindCalculator {
     const windChill =
       13.12 + 0.6215 * tempC - 11.37 * windKmh ** 0.16 + 0.3965 * tempC * windKmh ** 0.16;
 
-    return this.celsiusToKelvin(windChill);
+    return celsiusToKelvin(windChill);
   }
 
   /**
@@ -117,7 +126,7 @@ class WindCalculator {
     }
 
     // Convert to Fahrenheit and percentage for calculation
-    const tempF = this.kelvinToFahrenheit(temperatureK);
+    const tempF = kelvinToFahrenheit(temperatureK);
     const rhPercent = relativeHumidity * 100;
 
     // Heat index is only meaningful for temperatures above 80°F (26.7°C) and humidity above 40%
@@ -159,7 +168,7 @@ class WindCalculator {
       heatIndex += adjustment;
     }
 
-    return this.fahrenheitToKelvin(heatIndex);
+    return fahrenheitToKelvin(heatIndex);
   }
 
   /**
@@ -173,8 +182,8 @@ class WindCalculator {
       return temperatureK;
     }
 
-    const tempC = this.kelvinToCelsius(temperatureK);
-    const rh = Math.max(0.01, Math.min(0.99, relativeHumidity)); // Clamp to valid range
+    const tempC = kelvinToCelsius(temperatureK);
+    const rh = clamp(relativeHumidity, 0.01, 0.99); // Clamp to valid range
 
     // Magnus formula constants
     const a = 17.27;
@@ -186,7 +195,7 @@ class WindCalculator {
     // Calculate dew point
     const dewPointC = (b * gamma) / (a - gamma);
 
-    return this.celsiusToKelvin(dewPointC);
+    return celsiusToKelvin(dewPointC);
   }
 
   /**
@@ -206,31 +215,6 @@ class WindCalculator {
       typeof vesselHeading === 'number' &&
       typeof trueWindDirection === 'number'
     );
-  }
-
-  // Unit conversion utilities
-  kelvinToCelsius(kelvin) {
-    return kelvin - 273.15;
-  }
-
-  celsiusToKelvin(celsius) {
-    return celsius + 273.15;
-  }
-
-  kelvinToFahrenheit(kelvin) {
-    return ((kelvin - 273.15) * 9) / 5 + 32;
-  }
-
-  fahrenheitToKelvin(fahrenheit) {
-    return ((fahrenheit - 32) * 5) / 9 + 273.15;
-  }
-
-  degreesToRadians(degrees) {
-    return (degrees * Math.PI) / 180;
-  }
-
-  radiansToDegrees(radians) {
-    return (radians * 180) / Math.PI;
   }
 }
 
