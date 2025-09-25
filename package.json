@@ -1,0 +1,37 @@
+{
+  "name": "signalk-n2k-weather-provider",
+  "version": "1.0.0",
+  "description": "SignalK plugin that provides comprehensive weather data from AccuWeather API with calculated wind values and NMEA2000-compatible environmental measurements",
+  "keywords": [
+    "signalk-node-server-plugin",
+    "signalk-category-weather"
+  ],
+  "signalk-plugin-enabled-by-default": false,
+  "signalk": {
+    "displayName": "NMEA2000 Weather Provider"
+  },
+  "main": "plugin/index.js",
+  "author": "SignalK Community",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/signalk/signalk-n2k-weather-provider.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "debug": "^4.3.4",
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@signalk/server-api": "^2.3.0"
+  },
+  "scripts": {
+    "test": "node --test test/**/*.test.js",
+    "lint": "biome check .",
+    "lint:fix": "biome check --apply .",
+    "format": "biome format --write ."
+  }
+}
