@@ -53,7 +53,7 @@ A comprehensive SignalK plugin that provides real-time weather data from AccuWea
 ### Manual Installation
 ```bash
 # Clone the repository
-git clone https://github.com/signalk/signalk-n2k-weather-provider.git
+git clone https://github.com/NearlCrews/signalk-n2k-weather-provider.git
 
 # Navigate to your SignalK node_modules directory
 cd ~/.signalk/node_modules
@@ -191,7 +191,7 @@ Key log patterns to monitor:
 ### Building from Source
 ```bash
 # Clone and install dependencies
-git clone https://github.com/signalk/signalk-n2k-weather-provider.git
+git clone https://github.com/NearlCrews/signalk-n2k-weather-provider.git
 cd signalk-n2k-weather-provider
 npm install
 
@@ -225,7 +225,7 @@ Apache 2.0 License - see [LICENSE](LICENSE) file for details.
 ## Support
 
 - **Documentation**: [SignalK Plugin Development Guide](https://demo.signalk.org/documentation/Developing/Plugins.html)
-- **Issues**: [GitHub Issues](https://github.com/signalk/signalk-n2k-weather-provider/issues)
+- **Issues**: [GitHub Issues](https://github.com/NearlCrews/signalk-n2k-weather-provider/issues)
 - **Discussions**: [SignalK Community Forum](https://github.com/SignalK/signalk-server/discussions)
 - **AccuWeather API**: [AccuWeather Developer Portal](https://developer.accuweather.com/)
 
