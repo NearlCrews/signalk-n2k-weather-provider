@@ -188,14 +188,23 @@ class AccuWeatherClient {
 
   /**
    * Convert AccuWeather humidity to ratio (0-1)
-   * @param {number} humidity AccuWeather humidity percentage
+   * @param {number} humidity AccuWeather humidity (could be percentage or ratio)
    * @returns {number|null} Humidity as ratio
    */
   convertAccuWeatherHumidity(humidity) {
     if (typeof humidity !== "number") return null;
 
-    // AccuWeather humidity is in percentage, convert to ratio
-    return humidity / 100;
+    // AccuWeather humidity is typically in percentage (0-100), convert to ratio (0-1)
+    // But handle cases where it might already be a ratio
+    if (humidity <= 1.0) {
+      // If humidity is <= 1.0, it's likely already a ratio
+      this.debug(`AccuWeather humidity appears to be a ratio: ${humidity}`);
+      return humidity;
+    } else {
+      // If humidity is > 1.0, it's likely a percentage, convert to ratio
+      this.debug(`AccuWeather humidity appears to be percentage: ${humidity}%, converting to ratio: ${humidity / 100}`);
+      return humidity / 100;
+    }
   }
 
   /**
