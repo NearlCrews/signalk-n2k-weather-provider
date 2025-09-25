@@ -12,7 +12,7 @@ class NMEA2000PathMapper {
     this.defaults = {
       temperature: 273.15, // 0°C in Kelvin (data unavailable)
       pressure: 101325, // Standard atmospheric pressure in Pascals
-      humidity: 0.5, // 50% as ratio (reasonable default)
+      humidity: 0.5, // 50% as ratio (will be converted to 50% for display)
       windSpeed: 0, // No wind
       windDirection: 0, // North
       dewPoint: 273.15, // 0°C in Kelvin
@@ -114,15 +114,17 @@ class NMEA2000PathMapper {
       },
     });
 
-    // Humidity path - Ratio (0-1) per SignalK spec
+    // Humidity path - Convert to percentage for NMEA2000 compatibility
+    const humidityRatio = this.getValueOrDefault(weatherData.humidity, "humidity");
+    const humidityPercentage = humidityRatio * 100;
     values.push({
       path: "environment.outside.relativeHumidity",
-      value: this.getValueOrDefault(weatherData.humidity, "humidity"),
+      value: humidityPercentage,
       timestamp,
       meta: {
-        units: "ratio",
+        units: "percent",
         displayName: "Relative Humidity",
-        description: "Relative humidity as a ratio (0.0 = 0%, 1.0 = 100%)",
+        description: "Relative humidity as percentage (0-100%)",
       },
     });
 

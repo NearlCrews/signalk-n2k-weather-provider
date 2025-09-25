@@ -145,9 +145,10 @@ class AccuWeatherClient {
       temperature: accuData.Temperature?.Metric?.Value,
       windDirection: accuData.Wind?.Direction?.Degrees,
       windSpeed: accuData.Wind?.Speed?.Metric?.Value,
+      rawHumidity: accuData.RelativeHumidity,
     });
 
-    return {
+    const convertedData = {
       temperature: this.convertAccuWeatherTemperature(accuData.Temperature),
       pressure: this.convertAccuWeatherPressure(accuData.Pressure),
       humidity: this.convertAccuWeatherHumidity(accuData.RelativeHumidity),
@@ -160,6 +161,14 @@ class AccuWeatherClient {
       timestamp: new Date().toISOString(),
       source: "AccuWeather",
     };
+
+    this.debug("Converted weather data - humidity details:", {
+      rawHumidity: accuData.RelativeHumidity,
+      convertedHumidity: convertedData.humidity,
+      expectedDisplayPercentage: convertedData.humidity * 100
+    });
+
+    return convertedData;
   }
 
   /**
