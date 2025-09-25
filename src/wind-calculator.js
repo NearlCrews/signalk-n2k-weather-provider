@@ -18,7 +18,7 @@ class WindCalculator {
    * @returns {number} Apparent wind speed in m/s
    */
   calculateApparentWindSpeed(trueWindSpeed, vesselSpeed, vesselHeading, trueWindDirection) {
-    if (typeof trueWindSpeed !== "number" || typeof vesselSpeed !== "number") {
+    if (typeof trueWindSpeed !== 'number' || typeof vesselSpeed !== 'number') {
       return trueWindSpeed || 0;
     }
 
@@ -49,7 +49,7 @@ class WindCalculator {
    * @returns {number} Apparent wind angle relative to bow in radians
    */
   calculateApparentWindAngle(trueWindSpeed, vesselSpeed, vesselHeading, trueWindDirection) {
-    if (typeof trueWindSpeed !== "number" || typeof vesselSpeed !== "number") {
+    if (typeof trueWindSpeed !== 'number' || typeof vesselSpeed !== 'number') {
       return trueWindDirection - vesselHeading;
     }
 
@@ -85,7 +85,7 @@ class WindCalculator {
    * @returns {number} Wind chill temperature in Kelvin
    */
   calculateWindChill(temperatureK, windSpeedMs) {
-    if (typeof temperatureK !== "number" || typeof windSpeedMs !== "number") {
+    if (typeof temperatureK !== 'number' || typeof windSpeedMs !== 'number') {
       return temperatureK;
     }
 
@@ -112,7 +112,7 @@ class WindCalculator {
    * @returns {number} Heat index in Kelvin
    */
   calculateHeatIndex(temperatureK, relativeHumidity) {
-    if (typeof temperatureK !== "number" || typeof relativeHumidity !== "number") {
+    if (typeof temperatureK !== 'number' || typeof relativeHumidity !== 'number') {
       return temperatureK;
     }
 
@@ -169,7 +169,7 @@ class WindCalculator {
    * @returns {number} Dew point temperature in Kelvin
    */
   calculateDewPoint(temperatureK, relativeHumidity) {
-    if (typeof temperatureK !== "number" || typeof relativeHumidity !== "number") {
+    if (typeof temperatureK !== 'number' || typeof relativeHumidity !== 'number') {
       return temperatureK;
     }
 
@@ -199,12 +199,12 @@ class WindCalculator {
    */
   validateInputs(trueWindSpeed, vesselSpeed, vesselHeading, trueWindDirection) {
     return (
-      typeof trueWindSpeed === "number" &&
+      typeof trueWindSpeed === 'number' &&
       trueWindSpeed >= 0 &&
-      typeof vesselSpeed === "number" &&
+      typeof vesselSpeed === 'number' &&
       vesselSpeed >= 0 &&
-      typeof vesselHeading === "number" &&
-      typeof trueWindDirection === "number"
+      typeof vesselHeading === 'number' &&
+      typeof trueWindDirection === 'number'
     );
   }
 

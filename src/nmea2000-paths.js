@@ -12,7 +12,7 @@ class NMEA2000PathMapper {
     this.defaults = {
       temperature: 273.15, // 0°C in Kelvin (data unavailable)
       pressure: 101325, // Standard atmospheric pressure in Pascals
-      humidity: 0.5, // 50% as ratio (reasonable default)
+      humidity: 0.5, // 50% as ratio (will be converted to 50% for display)
       windSpeed: 0, // No wind
       windDirection: 0, // North
       dewPoint: 273.15, // 0°C in Kelvin
@@ -27,8 +27,8 @@ class NMEA2000PathMapper {
    * @returns {Object} SignalK delta message with NMEA2000 paths
    */
   mapToSignalKPaths(weatherData) {
-    if (!weatherData || typeof weatherData !== "object") {
-      this.debug("No weather data provided, using defaults");
+    if (!weatherData || typeof weatherData !== 'object') {
+      this.debug('No weather data provided, using defaults');
       weatherData = {};
     }
 
@@ -37,214 +37,216 @@ class NMEA2000PathMapper {
 
     // Temperature paths - All temperature values are in Kelvin per SignalK spec
     values.push({
-      path: "environment.outside.temperature",
-      value: this.getValueOrDefault(weatherData.temperature, "temperature"),
+      path: 'environment.outside.temperature',
+      value: this.getValueOrDefault(weatherData.temperature, 'temperature'),
       timestamp,
       meta: {
-        units: "K",
-        displayName: "Outside Temperature",
-        description: "Current outside air temperature from weather services",
+        units: 'K',
+        displayName: 'Outside Temperature',
+        description: 'Current outside air temperature from weather services',
       },
     });
 
     values.push({
-      path: "environment.outside.dewPointTemperature",
-      value: this.getValueOrDefault(weatherData.dewPoint, "dewPoint"),
+      path: 'environment.outside.dewPointTemperature',
+      value: this.getValueOrDefault(weatherData.dewPoint, 'dewPoint'),
       timestamp,
       meta: {
-        units: "K",
-        displayName: "Dew Point Temperature",
-        description: "Dew point temperature from weather services",
+        units: 'K',
+        displayName: 'Dew Point Temperature',
+        description: 'Dew point temperature from weather services',
       },
     });
 
     values.push({
-      path: "environment.outside.apparentTemperature",
-      value: this.getValueOrDefault(weatherData.heatIndex, "heatIndex"),
+      path: 'environment.outside.apparentTemperature',
+      value: this.getValueOrDefault(weatherData.heatIndex, 'heatIndex'),
       timestamp,
       meta: {
-        units: "K",
-        displayName: "Apparent Temperature",
-        description: "Heat index - how hot it feels when relative humidity is factored in",
+        units: 'K',
+        displayName: 'Apparent Temperature',
+        description: 'Heat index - how hot it feels when relative humidity is factored in',
       },
     });
 
     values.push({
-      path: "environment.outside.windChillTemperature",
-      value: this.getValueOrDefault(weatherData.windChill, "windChill"),
+      path: 'environment.outside.windChillTemperature',
+      value: this.getValueOrDefault(weatherData.windChill, 'windChill'),
       timestamp,
       meta: {
-        units: "K",
-        displayName: "Wind Chill Temperature",
-        description: "How cold it feels when wind speed is factored in",
+        units: 'K',
+        displayName: 'Wind Chill Temperature',
+        description: 'How cold it feels when wind speed is factored in',
       },
     });
 
     values.push({
-      path: "environment.outside.theoreticalWindChillTemperature",
-      value: this.getValueOrDefault(weatherData.windChill, "windChill"),
+      path: 'environment.outside.theoreticalWindChillTemperature',
+      value: this.getValueOrDefault(weatherData.windChill, 'windChill'),
       timestamp,
       meta: {
-        units: "K",
-        displayName: "Theoretical Wind Chill Temperature",
-        description: "Theoretical wind chill temperature calculation",
+        units: 'K',
+        displayName: 'Theoretical Wind Chill Temperature',
+        description: 'Theoretical wind chill temperature calculation',
       },
     });
 
     values.push({
-      path: "environment.outside.heatIndexTemperature",
-      value: this.getValueOrDefault(weatherData.heatIndex, "heatIndex"),
+      path: 'environment.outside.heatIndexTemperature',
+      value: this.getValueOrDefault(weatherData.heatIndex, 'heatIndex'),
       timestamp,
       meta: {
-        units: "K",
-        displayName: "Heat Index Temperature",
-        description: "Heat index temperature - how hot it feels with humidity factored in",
+        units: 'K',
+        displayName: 'Heat Index Temperature',
+        description: 'Heat index temperature - how hot it feels with humidity factored in',
       },
     });
 
     // Pressure path - Pascals per SignalK spec
     values.push({
-      path: "environment.outside.pressure",
-      value: this.getValueOrDefault(weatherData.pressure, "pressure"),
+      path: 'environment.outside.pressure',
+      value: this.getValueOrDefault(weatherData.pressure, 'pressure'),
       timestamp,
       meta: {
-        units: "Pa",
-        displayName: "Atmospheric Pressure",
-        description: "Atmospheric pressure from weather services",
+        units: 'Pa',
+        displayName: 'Atmospheric Pressure',
+        description: 'Atmospheric pressure from weather services',
       },
     });
 
-    // Humidity path - Ratio (0-1) per SignalK spec
+    // Humidity path - Convert to percentage for NMEA2000 compatibility
+    const humidityRatio = this.getValueOrDefault(weatherData.humidity, 'humidity');
+    const humidityPercentage = humidityRatio * 100;
     values.push({
-      path: "environment.outside.relativeHumidity",
-      value: this.getValueOrDefault(weatherData.humidity, "humidity"),
+      path: 'environment.outside.relativeHumidity',
+      value: humidityPercentage,
       timestamp,
       meta: {
-        units: "ratio",
-        displayName: "Relative Humidity",
-        description: "Relative humidity as a ratio (0.0 = 0%, 1.0 = 100%)",
+        units: 'percent',
+        displayName: 'Relative Humidity',
+        description: 'Relative humidity as percentage (0-100%)',
       },
     });
 
     // Wind paths - True Wind
     values.push({
-      path: "environment.wind.speedTrue",
-      value: this.getValueOrDefault(weatherData.windSpeed, "windSpeed", "true wind"),
+      path: 'environment.wind.speedTrue',
+      value: this.getValueOrDefault(weatherData.windSpeed, 'windSpeed', 'true wind'),
       timestamp,
       meta: {
-        units: "m/s",
-        displayName: "True Wind Speed",
-        description: "True wind speed from weather services",
+        units: 'm/s',
+        displayName: 'True Wind Speed',
+        description: 'True wind speed from weather services',
       },
     });
 
     values.push({
-      path: "environment.wind.directionTrue",
-      value: this.getValueOrDefault(weatherData.windDirection, "windDirection", "true wind"),
+      path: 'environment.wind.directionTrue',
+      value: this.getValueOrDefault(weatherData.windDirection, 'windDirection', 'true wind'),
       timestamp,
       meta: {
-        units: "rad",
-        displayName: "True Wind Direction",
-        description: "True wind direction in radians from weather services",
+        units: 'rad',
+        displayName: 'True Wind Direction',
+        description: 'True wind direction in radians from weather services',
       },
     });
 
     // Wind paths - Apparent Wind
     values.push({
-      path: "environment.wind.speedApparent",
-      value: this.getValueOrDefault(weatherData.apparentWindSpeed, "windSpeed", "apparent wind"),
+      path: 'environment.wind.speedApparent',
+      value: this.getValueOrDefault(weatherData.apparentWindSpeed, 'windSpeed', 'apparent wind'),
       timestamp,
       meta: {
-        units: "m/s",
-        displayName: "Apparent Wind Speed",
-        description: "Apparent wind speed relative to vessel movement",
+        units: 'm/s',
+        displayName: 'Apparent Wind Speed',
+        description: 'Apparent wind speed relative to vessel movement',
       },
     });
 
     values.push({
-      path: "environment.wind.angleApparent",
+      path: 'environment.wind.angleApparent',
       value: this.getValueOrDefault(
         weatherData.apparentWindAngle,
-        "windDirection",
-        "apparent wind",
+        'windDirection',
+        'apparent wind'
       ),
       timestamp,
       meta: {
-        units: "rad",
-        displayName: "Apparent Wind Angle",
-        description: "Apparent wind angle relative to vessel bow",
+        units: 'rad',
+        displayName: 'Apparent Wind Angle',
+        description: 'Apparent wind angle relative to vessel bow',
       },
     });
 
     // Additional wind paths
     values.push({
-      path: "environment.wind.speedOverGround",
-      value: this.getValueOrDefault(weatherData.windSpeed, "windSpeed", "over ground"),
+      path: 'environment.wind.speedOverGround',
+      value: this.getValueOrDefault(weatherData.windSpeed, 'windSpeed', 'over ground'),
       timestamp,
       meta: {
-        units: "m/s",
-        displayName: "Wind Speed Over Ground",
-        description: "Wind speed relative to ground movement",
+        units: 'm/s',
+        displayName: 'Wind Speed Over Ground',
+        description: 'Wind speed relative to ground movement',
       },
     });
 
     values.push({
-      path: "environment.wind.angleTrueWater",
-      value: this.getValueOrDefault(weatherData.windDirection, "windDirection", "true water"),
+      path: 'environment.wind.angleTrueWater',
+      value: this.getValueOrDefault(weatherData.windDirection, 'windDirection', 'true water'),
       timestamp,
       meta: {
-        units: "rad",
-        displayName: "True Wind Angle to Water",
-        description: "True wind angle relative to water surface",
+        units: 'rad',
+        displayName: 'True Wind Angle to Water',
+        description: 'True wind angle relative to water surface',
       },
     });
 
     // Additional environmental paths
     values.push({
-      path: "environment.outside.absoluteHumidity",
+      path: 'environment.outside.absoluteHumidity',
       value: this.calculateAbsoluteHumidity(
-        this.getValueOrDefault(weatherData.temperature, "temperature"),
-        this.getValueOrDefault(weatherData.humidity, "humidity"),
+        this.getValueOrDefault(weatherData.temperature, 'temperature'),
+        this.getValueOrDefault(weatherData.humidity, 'humidity')
       ),
       timestamp,
       meta: {
-        units: "kg/m3",
-        displayName: "Absolute Humidity",
-        description: "Absolute humidity in kg/m³",
+        units: 'kg/m3',
+        displayName: 'Absolute Humidity',
+        description: 'Absolute humidity in kg/m³',
       },
     });
 
     // Air density (useful for sailing calculations)
     values.push({
-      path: "environment.outside.airDensity",
+      path: 'environment.outside.airDensity',
       value: this.calculateAirDensity(
-        this.getValueOrDefault(weatherData.temperature, "temperature"),
-        this.getValueOrDefault(weatherData.pressure, "pressure"),
-        this.getValueOrDefault(weatherData.humidity, "humidity"),
+        this.getValueOrDefault(weatherData.temperature, 'temperature'),
+        this.getValueOrDefault(weatherData.pressure, 'pressure'),
+        this.getValueOrDefault(weatherData.humidity, 'humidity')
       ),
       timestamp,
       meta: {
-        units: "kg/m3",
-        displayName: "Air Density",
-        description: "Air density accounting for temperature, pressure, and humidity",
+        units: 'kg/m3',
+        displayName: 'Air Density',
+        description: 'Air density accounting for temperature, pressure, and humidity',
       },
     });
 
     // Weather description (if available from APIs)
     if (weatherData.description) {
       values.push({
-        path: "environment.outside.weatherDescription",
+        path: 'environment.outside.weatherDescription',
         value: weatherData.description,
         timestamp,
       });
     }
 
     return {
-      context: "vessels.self",
+      context: 'vessels.self',
       updates: [
         {
           source: {
-            label: "signalk-n2k-weather-provider",
+            label: 'signalk-n2k-weather-provider',
           },
           timestamp,
           values,
@@ -259,24 +261,24 @@ class NMEA2000PathMapper {
    * @param {string} type - Type of data for default lookup
    * @returns {number} Value or default
    */
-  getValueOrDefault(value, type, pathContext = "") {
+  getValueOrDefault(value, type, pathContext = '') {
     // Check if value is a valid finite number
-    if (typeof value === "number" && !Number.isNaN(value) && Number.isFinite(value)) {
+    if (typeof value === 'number' && !Number.isNaN(value) && Number.isFinite(value)) {
       return value;
     }
 
     const defaultValue = this.defaults[type];
     if (
-      typeof defaultValue === "number" &&
+      typeof defaultValue === 'number' &&
       !Number.isNaN(defaultValue) &&
       Number.isFinite(defaultValue)
     ) {
-      const context = pathContext ? ` (${pathContext})` : "";
+      const context = pathContext ? ` (${pathContext})` : '';
       this.debug(`Using default value for ${type}${context}: ${defaultValue}`);
       return defaultValue;
     }
 
-    const context = pathContext ? ` (${pathContext})` : "";
+    const context = pathContext ? ` (${pathContext})` : '';
     this.debug(`No valid default available for ${type}${context}, using 0`);
     return 0;
   }
@@ -289,8 +291,8 @@ class NMEA2000PathMapper {
    */
   calculateAbsoluteHumidity(temperatureK, relativeHumidity) {
     if (
-      typeof temperatureK !== "number" ||
-      typeof relativeHumidity !== "number" ||
+      typeof temperatureK !== 'number' ||
+      typeof relativeHumidity !== 'number' ||
       !Number.isFinite(temperatureK) ||
       !Number.isFinite(relativeHumidity) ||
       temperatureK <= 0 ||
@@ -335,8 +337,8 @@ class NMEA2000PathMapper {
    */
   calculateAirDensity(temperatureK, pressurePa, relativeHumidity) {
     if (
-      typeof temperatureK !== "number" ||
-      typeof pressurePa !== "number" ||
+      typeof temperatureK !== 'number' ||
+      typeof pressurePa !== 'number' ||
       !Number.isFinite(temperatureK) ||
       !Number.isFinite(pressurePa) ||
       temperatureK <= 0 ||
@@ -428,19 +430,19 @@ class NMEA2000PathMapper {
    */
   getNMEA2000Paths() {
     return [
-      "environment.outside.temperature",
-      "environment.outside.dewPointTemperature",
-      "environment.outside.apparentTemperature",
-      "environment.outside.windChillTemperature",
-      "environment.outside.pressure",
-      "environment.outside.relativeHumidity",
-      "environment.wind.speedTrue",
-      "environment.wind.directionTrue",
-      "environment.wind.speedApparent",
-      "environment.wind.angleApparent",
-      "environment.outside.absoluteHumidity",
-      "environment.outside.airDensity",
-      "environment.outside.weatherDescription",
+      'environment.outside.temperature',
+      'environment.outside.dewPointTemperature',
+      'environment.outside.apparentTemperature',
+      'environment.outside.windChillTemperature',
+      'environment.outside.pressure',
+      'environment.outside.relativeHumidity',
+      'environment.wind.speedTrue',
+      'environment.wind.directionTrue',
+      'environment.wind.speedApparent',
+      'environment.wind.angleApparent',
+      'environment.outside.absoluteHumidity',
+      'environment.outside.airDensity',
+      'environment.outside.weatherDescription',
     ];
   }
 }

@@ -16,16 +16,16 @@ class SignalKClient {
    */
   getVesselPosition() {
     try {
-      const positionData = this.app.getSelfPath("navigation.position");
+      const positionData = this.app.getSelfPath('navigation.position');
 
       if (!positionData || !positionData.value) {
-        this.debug("No position data available from navigation.position");
+        this.debug('No position data available from navigation.position');
         return null;
       }
 
       // Filter out data from signalk-node-red sources as requested
       if (this.isFromNodeRedSource(positionData)) {
-        this.debug("Ignoring position data from signalk-node-red source");
+        this.debug('Ignoring position data from signalk-node-red source');
         return null;
       }
 
@@ -38,15 +38,15 @@ class SignalKClient {
 
       // Validate position data
       if (!this.isValidPosition(position)) {
-        this.debug("Invalid position data:", position);
+        this.debug('Invalid position data:', position);
         return null;
       }
 
       this.cachedData.position = position;
-      this.debug("Retrieved vessel position:", position);
+      this.debug('Retrieved vessel position:', position);
       return position;
     } catch (error) {
-      this.debug("Error retrieving vessel position:", error);
+      this.debug('Error retrieving vessel position:', error);
       return null;
     }
   }
@@ -57,22 +57,22 @@ class SignalKClient {
    */
   getVesselSpeedOverGround() {
     try {
-      const speedData = this.app.getSelfPath("navigation.speedOverGround");
+      const speedData = this.app.getSelfPath('navigation.speedOverGround');
 
-      if (!speedData || typeof speedData.value !== "number") {
-        this.debug("No speed over ground data available");
+      if (!speedData || typeof speedData.value !== 'number') {
+        this.debug('No speed over ground data available');
         return null;
       }
 
       // Filter out data from signalk-node-red sources
       if (this.isFromNodeRedSource(speedData)) {
-        this.debug("Ignoring speed data from signalk-node-red source");
+        this.debug('Ignoring speed data from signalk-node-red source');
         return null;
       }
 
       // Validate speed data (should be non-negative)
       if (speedData.value < 0) {
-        this.debug("Invalid negative speed value:", speedData.value);
+        this.debug('Invalid negative speed value:', speedData.value);
         return null;
       }
 
@@ -82,10 +82,10 @@ class SignalKClient {
         source: speedData.source,
       };
 
-      this.debug("Retrieved vessel speed over ground:", speedData.value, "m/s");
+      this.debug('Retrieved vessel speed over ground:', speedData.value, 'm/s');
       return speedData.value;
     } catch (error) {
-      this.debug("Error retrieving vessel speed over ground:", error);
+      this.debug('Error retrieving vessel speed over ground:', error);
       return null;
     }
   }
@@ -97,40 +97,40 @@ class SignalKClient {
   getVesselCourseOverGroundTrue() {
     try {
       // Try primary course over ground true first
-      let courseData = this.app.getSelfPath("navigation.courseOverGroundTrue");
+      let courseData = this.app.getSelfPath('navigation.courseOverGroundTrue');
 
       // Fallback to magnetic course if true course not available
-      if (!courseData || typeof courseData.value !== "number") {
-        this.debug("No true course data, trying magnetic course");
-        courseData = this.app.getSelfPath("navigation.courseOverGroundMagnetic");
+      if (!courseData || typeof courseData.value !== 'number') {
+        this.debug('No true course data, trying magnetic course');
+        courseData = this.app.getSelfPath('navigation.courseOverGroundMagnetic');
       }
 
       // Fallback to heading if course not available
-      if (!courseData || typeof courseData.value !== "number") {
-        this.debug("No course data, trying heading true");
-        courseData = this.app.getSelfPath("navigation.headingTrue");
+      if (!courseData || typeof courseData.value !== 'number') {
+        this.debug('No course data, trying heading true');
+        courseData = this.app.getSelfPath('navigation.headingTrue');
       }
 
       // Fallback to magnetic heading
-      if (!courseData || typeof courseData.value !== "number") {
-        this.debug("No true heading, trying magnetic heading");
-        courseData = this.app.getSelfPath("navigation.headingMagnetic");
+      if (!courseData || typeof courseData.value !== 'number') {
+        this.debug('No true heading, trying magnetic heading');
+        courseData = this.app.getSelfPath('navigation.headingMagnetic');
       }
 
-      if (!courseData || typeof courseData.value !== "number") {
-        this.debug("No course or heading data available from any source");
+      if (!courseData || typeof courseData.value !== 'number') {
+        this.debug('No course or heading data available from any source');
         return null;
       }
 
       // Filter out data from signalk-node-red sources
       if (this.isFromNodeRedSource(courseData)) {
-        this.debug("Ignoring course/heading data from signalk-node-red source");
+        this.debug('Ignoring course/heading data from signalk-node-red source');
         return null;
       }
 
       // Validate course data (should be 0-2π radians)
       if (courseData.value < 0 || courseData.value > 2 * Math.PI) {
-        this.debug("Invalid course value (outside 0-2π range):", courseData.value);
+        this.debug('Invalid course value (outside 0-2π range):', courseData.value);
         return null;
       }
 
@@ -140,10 +140,10 @@ class SignalKClient {
         source: courseData.source,
       };
 
-      this.debug("Retrieved vessel course/heading:", courseData.value, "radians");
+      this.debug('Retrieved vessel course/heading:', courseData.value, 'radians');
       return courseData.value;
     } catch (error) {
-      this.debug("Error retrieving vessel course/heading:", error);
+      this.debug('Error retrieving vessel course/heading:', error);
       return null;
     }
   }
@@ -164,14 +164,14 @@ class SignalKClient {
     // Check if we have complete navigation data
     vesselData.isComplete = !!(
       vesselData.position &&
-      typeof vesselData.speedOverGround === "number" &&
-      typeof vesselData.courseOverGroundTrue === "number"
+      typeof vesselData.speedOverGround === 'number' &&
+      typeof vesselData.courseOverGroundTrue === 'number'
     );
 
-    this.debug("Complete vessel data retrieval:", {
+    this.debug('Complete vessel data retrieval:', {
       hasPosition: !!vesselData.position,
-      hasSpeed: typeof vesselData.speedOverGround === "number",
-      hasCourse: typeof vesselData.courseOverGroundTrue === "number",
+      hasSpeed: typeof vesselData.speedOverGround === 'number',
+      hasCourse: typeof vesselData.courseOverGroundTrue === 'number',
       isComplete: vesselData.isComplete,
     });
 
@@ -201,7 +201,7 @@ class SignalKClient {
     }
 
     const source = data.source.toLowerCase();
-    return source.includes("signalk-node-red") || source.includes("node-red");
+    return source.includes('signalk-node-red') || source.includes('node-red');
   }
 
   /**
@@ -212,8 +212,8 @@ class SignalKClient {
   isValidPosition(position) {
     if (
       !position ||
-      typeof position.latitude !== "number" ||
-      typeof position.longitude !== "number"
+      typeof position.latitude !== 'number' ||
+      typeof position.longitude !== 'number'
     ) {
       return false;
     }

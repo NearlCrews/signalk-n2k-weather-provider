@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 
 class WeatherAggregator {
   constructor(settings, debug) {
@@ -15,26 +15,26 @@ class WeatherAggregator {
   async getAggregatedWeatherData(position) {
     if (
       !position ||
-      typeof position.latitude !== "number" ||
-      typeof position.longitude !== "number"
+      typeof position.latitude !== 'number' ||
+      typeof position.longitude !== 'number'
     ) {
-      throw new Error("Invalid position provided for weather data");
+      throw new Error('Invalid position provided for weather data');
     }
 
     if (!this.settings.accuWeatherApiKey) {
-      throw new Error("AccuWeather API key not provided");
+      throw new Error('AccuWeather API key not provided');
     }
 
     try {
       const weatherData = await this.accuWeatherClient.getCurrentWeather(
         position.latitude,
-        position.longitude,
+        position.longitude
       );
 
-      this.debug("Successfully retrieved weather data from AccuWeather");
+      this.debug('Successfully retrieved weather data from AccuWeather');
       return weatherData;
     } catch (error) {
-      this.debug("AccuWeather API error:", error.message);
+      this.debug('AccuWeather API error:', error.message);
       throw error;
     }
   }
@@ -47,7 +47,7 @@ class AccuWeatherClient {
   constructor(apiKey, debug) {
     this.apiKey = apiKey;
     this.debug = debug;
-    this.baseUrl = "http://dataservice.accuweather.com";
+    this.baseUrl = 'http://dataservice.accuweather.com';
     this.locationCache = new Map(); // Cache location keys to avoid repeated lookups
   }
 
@@ -59,7 +59,7 @@ class AccuWeatherClient {
    */
   async getCurrentWeather(latitude, longitude) {
     if (!this.apiKey) {
-      throw new Error("AccuWeather API key not provided");
+      throw new Error('AccuWeather API key not provided');
     }
 
     try {
@@ -70,15 +70,15 @@ class AccuWeatherClient {
       const url = `${this.baseUrl}/currentconditions/v1/${locationKey}?apikey=${this.apiKey}&details=true`;
 
       const response = await fetch(url, {
-        headers: { "User-Agent": "NMEA2000WeatherForecast/1.0" },
+        headers: { 'User-Agent': 'NMEA2000WeatherForecast/1.0' },
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error("Invalid AccuWeather API key");
+          throw new Error('Invalid AccuWeather API key');
         }
         if (response.status === 429) {
-          throw new Error("AccuWeather API rate limit exceeded");
+          throw new Error('AccuWeather API rate limit exceeded');
         }
         throw new Error(`AccuWeather API returned ${response.status}: ${response.statusText}`);
       }
@@ -86,7 +86,7 @@ class AccuWeatherClient {
       const data = await response.json();
       return this.convertAccuWeatherToStandardFormat(data[0]); // AccuWeather returns array
     } catch (error) {
-      this.debug("AccuWeather API error:", error);
+      this.debug('AccuWeather API error:', error);
       throw error;
     }
   }
@@ -110,12 +110,12 @@ class AccuWeatherClient {
       const url = `${this.baseUrl}/locations/v1/cities/geoposition/search?apikey=${this.apiKey}&q=${latitude},${longitude}`;
 
       const response = await fetch(url, {
-        headers: { "User-Agent": "NMEA2000WeatherForecast/1.0" },
+        headers: { 'User-Agent': 'NMEA2000WeatherForecast/1.0' },
       });
 
       if (!response.ok) {
         throw new Error(
-          `AccuWeather location API returned ${response.status}: ${response.statusText}`,
+          `AccuWeather location API returned ${response.status}: ${response.statusText}`
         );
       }
 
@@ -126,11 +126,11 @@ class AccuWeatherClient {
       this.locationCache.set(coordsKey, locationKey);
 
       this.debug(
-        `Retrieved location key ${locationKey} for ${data.LocalizedName}, ${data.AdministrativeArea.LocalizedName}`,
+        `Retrieved location key ${locationKey} for ${data.LocalizedName}, ${data.AdministrativeArea.LocalizedName}`
       );
       return locationKey;
     } catch (error) {
-      this.debug("AccuWeather location lookup error:", error);
+      this.debug('AccuWeather location lookup error:', error);
       throw error;
     }
   }
@@ -141,13 +141,14 @@ class AccuWeatherClient {
    * @returns {Object} Standardized weather data
    */
   convertAccuWeatherToStandardFormat(accuData) {
-    this.debug("Converting AccuWeather data:", {
+    this.debug('Converting AccuWeather data:', {
       temperature: accuData.Temperature?.Metric?.Value,
       windDirection: accuData.Wind?.Direction?.Degrees,
       windSpeed: accuData.Wind?.Speed?.Metric?.Value,
+      rawHumidity: accuData.RelativeHumidity,
     });
 
-    return {
+    const convertedData = {
       temperature: this.convertAccuWeatherTemperature(accuData.Temperature),
       pressure: this.convertAccuWeatherPressure(accuData.Pressure),
       humidity: this.convertAccuWeatherHumidity(accuData.RelativeHumidity),
@@ -158,8 +159,16 @@ class AccuWeatherClient {
       heatIndex: this.convertAccuWeatherTemperature(accuData.RealFeelTemperature),
       description: accuData.WeatherText,
       timestamp: new Date().toISOString(),
-      source: "AccuWeather",
+      source: 'AccuWeather',
     };
+
+    this.debug('Converted weather data - humidity details:', {
+      rawHumidity: accuData.RelativeHumidity,
+      convertedHumidity: convertedData.humidity,
+      expectedDisplayPercentage: convertedData.humidity * 100,
+    });
+
+    return convertedData;
   }
 
   /**
@@ -168,7 +177,7 @@ class AccuWeatherClient {
    * @returns {number|null} Temperature in Kelvin
    */
   convertAccuWeatherTemperature(tempData) {
-    if (!tempData || typeof tempData.Metric?.Value !== "number") return null;
+    if (!tempData || typeof tempData.Metric?.Value !== 'number') return null;
 
     // AccuWeather temperatures are in Celsius, convert to Kelvin
     return tempData.Metric.Value + 273.15;
@@ -180,7 +189,7 @@ class AccuWeatherClient {
    * @returns {number|null} Pressure in Pascals
    */
   convertAccuWeatherPressure(pressureData) {
-    if (!pressureData || typeof pressureData.Metric?.Value !== "number") return null;
+    if (!pressureData || typeof pressureData.Metric?.Value !== 'number') return null;
 
     // AccuWeather pressure is in millibars, convert to Pascals
     return pressureData.Metric.Value * 100;
@@ -188,14 +197,25 @@ class AccuWeatherClient {
 
   /**
    * Convert AccuWeather humidity to ratio (0-1)
-   * @param {number} humidity AccuWeather humidity percentage
+   * @param {number} humidity AccuWeather humidity (could be percentage or ratio)
    * @returns {number|null} Humidity as ratio
    */
   convertAccuWeatherHumidity(humidity) {
-    if (typeof humidity !== "number") return null;
+    if (typeof humidity !== 'number') return null;
 
-    // AccuWeather humidity is in percentage, convert to ratio
-    return humidity / 100;
+    // AccuWeather humidity is typically in percentage (0-100), convert to ratio (0-1)
+    // But handle cases where it might already be a ratio
+    if (humidity <= 1.0) {
+      // If humidity is <= 1.0, it's likely already a ratio
+      this.debug(`AccuWeather humidity appears to be a ratio: ${humidity}`);
+      return humidity;
+    } else {
+      // If humidity is > 1.0, it's likely a percentage, convert to ratio
+      this.debug(
+        `AccuWeather humidity appears to be percentage: ${humidity}%, converting to ratio: ${humidity / 100}`
+      );
+      return humidity / 100;
+    }
   }
 
   /**
@@ -204,7 +224,7 @@ class AccuWeatherClient {
    * @returns {number|null} Wind speed in m/s
    */
   convertAccuWeatherWindSpeed(windSpeedData) {
-    if (!windSpeedData || typeof windSpeedData.Metric?.Value !== "number") return null;
+    if (!windSpeedData || typeof windSpeedData.Metric?.Value !== 'number') return null;
 
     // AccuWeather wind speed is in km/h, convert to m/s
     return windSpeedData.Metric.Value / 3.6;
@@ -216,17 +236,17 @@ class AccuWeatherClient {
    * @returns {number|null} Wind direction in radians
    */
   convertAccuWeatherWindDirection(windDirData) {
-    this.debug("AccuWeather wind direction data:", windDirData);
+    this.debug('AccuWeather wind direction data:', windDirData);
 
-    if (!windDirData || typeof windDirData.Degrees !== "number") {
-      this.debug("AccuWeather wind direction invalid or missing");
+    if (!windDirData || typeof windDirData.Degrees !== 'number') {
+      this.debug('AccuWeather wind direction invalid or missing');
       return null;
     }
 
     const degrees = windDirData.Degrees;
     const radians = degrees * (Math.PI / 180);
     this.debug(
-      `AccuWeather wind direction: ${degrees}° (${windDirData.English}) -> ${radians} rad`,
+      `AccuWeather wind direction: ${degrees}° (${windDirData.English}) -> ${radians} rad`
     );
 
     return radians;
