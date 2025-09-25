@@ -8,23 +8,23 @@ class WeatherService {
     this.lastUpdate = null;
 
     // Debug: Log the actual settings received by WeatherService
-    this.debug("WeatherService received settings:", JSON.stringify(settings, null, 2));
+    this.debug('WeatherService received settings:', JSON.stringify(settings, null, 2));
 
     // Initialize SignalK client for vessel data
-    const SignalKClient = require("./signalk-client");
+    const SignalKClient = require('./signalk-client');
     this.signalkClient = new SignalKClient(app, debug);
 
     // Initialize weather aggregator for API calls
-    const WeatherAggregator = require("./weather-aggregator");
+    const WeatherAggregator = require('./weather-aggregator');
     this.weatherAggregator = new WeatherAggregator(settings, debug);
 
     // Initialize wind calculator for proper vector calculations
-    const WindCalculator = require("./wind-calculator");
+    const WindCalculator = require('./wind-calculator');
     this.windCalculator = new WindCalculator(debug);
   }
 
   start() {
-    this.debug("WeatherService starting");
+    this.debug('WeatherService starting');
 
     // Start periodic weather updates based on configured frequency
     const updateInterval = (this.settings.updateFrequency || 5) * 60 * 1000; // Convert minutes to milliseconds
@@ -34,11 +34,11 @@ class WeatherService {
       this.updateWeatherData();
     }, updateInterval);
 
-    this.debug("WeatherService started with update interval:", updateInterval / 1000, "seconds");
+    this.debug('WeatherService started with update interval:', updateInterval / 1000, 'seconds');
   }
 
   stop() {
-    this.debug("WeatherService stopping");
+    this.debug('WeatherService stopping');
 
     if (this.updateTimer) {
       clearInterval(this.updateTimer);
@@ -48,7 +48,7 @@ class WeatherService {
     this.currentWeatherData = {};
     this.lastUpdate = null;
 
-    this.debug("WeatherService stopped");
+    this.debug('WeatherService stopped');
   }
 
   getCurrentWeatherData() {
@@ -56,13 +56,13 @@ class WeatherService {
   }
 
   async updateWeatherData() {
-    this.debug("Updating weather data...");
+    this.debug('Updating weather data...');
 
     try {
       // Get vessel position or use manual coordinates
       const position = this.getPosition();
       if (!position) {
-        this.debug("No position available for weather data");
+        this.debug('No position available for weather data');
         return;
       }
 
@@ -79,7 +79,7 @@ class WeatherService {
         let apparentWindAngle = null;
 
         if (vesselData.isComplete) {
-          this.debug("Calculating apparent wind with complete vessel data:", {
+          this.debug('Calculating apparent wind with complete vessel data:', {
             windSpeed: weatherData.windSpeed,
             vesselSpeed: vesselData.speedOverGround,
             vesselCourse: vesselData.courseOverGround,
@@ -90,46 +90,46 @@ class WeatherService {
             weatherData.windSpeed,
             vesselData.speedOverGround,
             vesselData.courseOverGround,
-            weatherData.windDirection,
+            weatherData.windDirection
           );
 
           apparentWindAngle = this.windCalculator.calculateApparentWindAngle(
             weatherData.windSpeed,
             vesselData.speedOverGround,
             vesselData.courseOverGround,
-            weatherData.windDirection,
+            weatherData.windDirection
           );
 
           this.debug(
-            `Apparent wind calculated: speed=${apparentWindSpeed} m/s, angle=${apparentWindAngle} rad (${((apparentWindAngle * 180) / Math.PI).toFixed(0)}°)`,
+            `Apparent wind calculated: speed=${apparentWindSpeed} m/s, angle=${apparentWindAngle} rad (${((apparentWindAngle * 180) / Math.PI).toFixed(0)}°)`
           );
         } else {
-          this.debug("Cannot calculate apparent wind - vessel data incomplete:", {
+          this.debug('Cannot calculate apparent wind - vessel data incomplete:', {
             hasPosition: !!vesselData.position,
-            hasSpeed: typeof vesselData.speedOverGround === "number",
-            hasCourse: typeof vesselData.courseOverGround === "number",
+            hasSpeed: typeof vesselData.speedOverGround === 'number',
+            hasCourse: typeof vesselData.courseOverGround === 'number',
             vesselDataAge: vesselData.dataAge,
           });
 
           // Use true wind values as fallback
           apparentWindSpeed = weatherData.windSpeed;
           apparentWindAngle = 0; // Relative to bow when no vessel course available
-          this.debug("Using fallback: apparent wind speed = true wind speed, angle = 0");
+          this.debug('Using fallback: apparent wind speed = true wind speed, angle = 0');
         }
 
         const windChill = this.windCalculator.calculateWindChill(
           weatherData.temperature,
-          weatherData.windSpeed,
+          weatherData.windSpeed
         );
 
         const heatIndex = this.windCalculator.calculateHeatIndex(
           weatherData.temperature,
-          weatherData.humidity,
+          weatherData.humidity
         );
 
         const dewPoint = this.windCalculator.calculateDewPoint(
           weatherData.temperature,
-          weatherData.humidity,
+          weatherData.humidity
         );
 
         // Enhance weather data with calculated values
@@ -143,13 +143,13 @@ class WeatherService {
         };
 
         this.lastUpdate = new Date();
-        this.debug("Weather data updated successfully");
+        this.debug('Weather data updated successfully');
       } else {
-        this.debug("No weather data received from APIs");
+        this.debug('No weather data received from APIs');
         // Keep using last known data
       }
     } catch (error) {
-      this.debug("Error updating weather data:", error);
+      this.debug('Error updating weather data:', error);
       // Keep last known data on error
     }
   }
@@ -194,13 +194,13 @@ class WeatherService {
         5.14,
         vesselData.speedOverGround,
         vesselData.courseOverGround,
-        1.57,
+        1.57
       ),
       apparentWindAngle: this.windCalculator.calculateApparentWindAngle(
         5.14,
         vesselData.speedOverGround,
         vesselData.courseOverGround,
-        1.57,
+        1.57
       ),
       lastUpdated: new Date().toISOString(),
     };
