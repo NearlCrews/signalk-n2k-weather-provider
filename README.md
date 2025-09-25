@@ -148,6 +148,157 @@ The plugin automatically formats all data for NMEA2000 compliance:
 - Wind directions in radians with 0.0001 rad resolution
 - Humidity as ratio (0-1) with 0.004% resolution
 
+## Broadcasting to Physical NMEA2000 Network
+
+To send weather data from this plugin to your physical NMEA2000 network (so chartplotters, MFDs, and instrument displays can show the data), use this plugin together with the **[signalk-to-nmea2000](https://www.npmjs.com/package/signalk-to-nmea2000)** plugin.
+
+### Setup Overview
+1. **This plugin** fetches weather data from AccuWeather and populates SignalK paths
+2. **signalk-to-nmea2000 plugin** reads those SignalK paths and broadcasts NMEA2000 messages on your boat's network
+3. **Your instruments** receive and display the weather data as if it came from physical sensors
+
+### Installation & Configuration
+
+#### Step 1: Install signalk-to-nmea2000 Plugin
+```bash
+# Via SignalK App Store (recommended)
+# Admin UI → App Store → Available → "signalk-to-nmea2000" → Install
+
+# Or via npm
+npm install signalk-to-nmea2000
+```
+
+#### Step 2: Configure NMEA2000 Hardware Connection  
+The signalk-to-nmea2000 plugin requires a hardware interface to your NMEA2000 network:
+- **CAN-USB adapters**: Actisense NGT-1, Yacht Devices YDNU-02, etc.
+- **Raspberry Pi CAN HAT**: PiCAN series, Waveshare RS485/CAN HAT
+- **Built-in CAN**: Some marine computers have integrated CAN interfaces
+
+#### Step 3: Configure signalk-to-nmea2000 Plugin
+1. Open SignalK Admin UI → Plugin Config → signalk-to-nmea2000
+2. Configure your CAN interface (typically `can0` for Pi CAN HATs)
+3. **Enable weather data transmission** by adding these mappings:
+
+```json
+{
+  "canDevice": "can0",
+  "transmitPGNs": [
+    {
+      "pgn": 130310,
+      "enabled": true,
+      "comment": "Environmental Parameters"
+    },
+    {
+      "pgn": 130306,
+      "enabled": true, 
+      "comment": "Wind Data"
+    }
+  ]
+}
+```
+
+#### Step 4: Map Weather Data Paths
+Configure which SignalK paths to broadcast as NMEA2000 messages:
+
+```json
+{
+  "pathMappings": [
+    {
+      "signalkPath": "environment.outside.temperature",
+      "pgn": 130310,
+      "enabled": true
+    },
+    {
+      "signalkPath": "environment.outside.pressure", 
+      "pgn": 130310,
+      "enabled": true
+    },
+    {
+      "signalkPath": "environment.outside.relativeHumidity",
+      "pgn": 130310, 
+      "enabled": true
+    },
+    {
+      "signalkPath": "environment.wind.speedApparent",
+      "pgn": 130306,
+      "enabled": true
+    },
+    {
+      "signalkPath": "environment.wind.angleApparent", 
+      "pgn": 130306,
+      "enabled": true
+    },
+    {
+      "signalkPath": "environment.wind.speedTrue",
+      "pgn": 130306,
+      "enabled": true
+    },
+    {
+      "signalkPath": "environment.wind.directionTrue",
+      "pgn": 130306,
+      "enabled": true
+    }
+  ]
+}
+```
+
+### Key NMEA2000 PGNs for Weather Data
+
+| PGN | Name | Weather Parameters |
+|-----|------|--------------------|
+| **130310** | Environmental Parameters | Temperature, Pressure, Humidity |
+| **130306** | Wind Data | Wind Speed, Wind Direction, Wind Angle |
+| **130311** | Environmental Parameters 2 | Dew Point, Heat Index, Wind Chill |
+
+### Verification & Testing
+
+#### Check Data Flow
+```bash
+# 1. Verify this plugin is populating SignalK paths
+curl http://localhost:3000/signalk/v1/api/vessels/self/environment/outside
+
+# 2. Check NMEA2000 plugin is transmitting  
+# Admin UI → Plugin Config → signalk-to-nmea2000 → View Logs
+
+# 3. Monitor CAN traffic (if using Linux)
+candump can0
+```
+
+#### Instrument Display
+Your NMEA2000 instruments should now show:
+- **Air Temperature** from internet weather data
+- **Barometric Pressure** with trend information  
+- **Relative Humidity** for comfort monitoring
+- **True Wind** from weather service + GPS calculations
+- **Apparent Wind** calculated from vessel motion
+- **Wind Chill/Heat Index** for safety planning
+
+### Network Considerations
+
+#### Source Priorities
+- Configure your chartplotter to prioritize this weather source appropriately
+- Physical sensors (if present) typically take precedence over calculated data
+- Use unique NMEA2000 source addresses to avoid conflicts
+
+#### Update Rates
+- Weather data updates every 5 minutes (AccuWeather API)
+- NMEA2000 transmission can be more frequent (1-5 seconds)
+- Apparent wind recalculates in real-time using vessel motion
+
+#### Troubleshooting
+```bash
+# Check CAN interface is up
+ip link show can0
+
+# Verify NMEA2000 traffic
+candump can0 | grep -E "(1F513|1F112)"  # PGN 130311, 130306
+
+# Monitor plugin logs
+journalctl -u signalk -f | grep -E "(n2k-weather|to-nmea2000)"
+```
+
+This setup transforms your internet connection into a comprehensive weather station that feeds professional meteorological data directly to all your boat's instruments - no physical sensors required!
+
 ## Troubleshooting
 
 ### Common Issues
